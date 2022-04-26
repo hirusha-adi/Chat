@@ -31,15 +31,21 @@ def chatbot_response():
         name = msg[11:]
         ints = predict_class(msg, model)
         res1 = getResponse(ints, intents)
-        res = res1.replace("{n}", name)
-    elif msg.startswith('hi my name is'):
-        name = msg[14:]
+        res = res1.format(n=name)
+    elif msg.startswith('im '):
+        name = msg[3:]
         ints = predict_class(msg, model)
         res1 = getResponse(ints, intents)
-        res = res1.replace("{n}", name)
+        res = res1.format(n=name)
+    elif msg.startswith('i am'):
+        name = msg[4:]
+        ints = predict_class(msg, model)
+        res1 = getResponse(ints, intents)
+        res = res1.format(n=name)
     else:
         ints = predict_class(msg, model)
         res = getResponse(ints, intents)
+
     return res
 
 
