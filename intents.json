@@ -37,11 +37,18 @@
             "patterns": [
                 "bye",
                 "good bye",
-                "see you later"
+                "see you later",
+                "cya",
+                "cya later",
+                "byeee",
+                "ttyl"
             ],
             "responses": [
-                "have a nice time, welcome back again",
-                "bye bye"
+                "K, Bye! have a nice time!",
+                "Bye bye ~ have a nice time!",
+                "bye hirusha",
+                "bye hirusha, ttyl",
+                "bye hirusha, talk to you later"
             ],
             "context": [
                 ""
@@ -57,14 +64,20 @@
                 "That's helpful",
                 "Awesome, thanks",
                 "Thanks for helping me",
-                "wow",
-                "great"
+                "great",
+                "thankuuu",
+                "tankuuu",
+                "thnq",
+                "thnx",
+                "thanx"
             ],
             "responses": [
                 "Happy to help!",
                 "Any time!",
                 "you're welcome",
-                "My pleasure"
+                "My pleasure",
+                "Anytime!",
+                "Dont mention it :-)"
             ],
             "context": [
                 ""
@@ -76,9 +89,9 @@
                 ""
             ],
             "responses": [
-                "Sorry, I didn't understand you",
-                "Please give me more info",
-                "Not sure I understand that"
+                "Sorry, I didn't understand you!",
+                "Please give me more info!",
+                "I didn't understand that... can you try to repeat?"
             ],
             "context": [
                 ""
@@ -87,12 +100,19 @@
         {
             "tag": "name1",
             "patterns": [
-                "what's your name?",
-                "who are you?"
+                "what's your name",
+                "who are you",
+                "wuts your name",
+                "whats your name",
+                "who r you",
+                "who r u",
+                "whats ur name",
+                "what are you",
+                "what is you"
             ],
             "responses": [
-                "I'm just a chat agent. I only exist in the internet",
-                "I'm a KCA chat agent"
+                "I'm Chatbot. I can talk with you! XD",
+                "I'm just a ChatBot built by @hirushaadi. I am built to text as a female companion. I am built with Machine Learning and Python"
             ],
             "context": [
                 ""
@@ -106,8 +126,8 @@
                 "I am"
             ],
             "responses": [
-                "Oooh great to meet you {n}. How may I assist you {n}",
-                "Oh, I'll keep that in mind {n}"
+                "Oooh great to meet you {n}. So, Wassup {n}",
+                "I know who you are {n}"
             ],
             "context": [
                 ""
@@ -117,10 +137,18 @@
             "tag": "date",
             "patterns": [
                 "coffee?",
-                "can i take you out on a date"
+                "can i take you out on a date",
+                "wanna hookup tonight",
+                "tonight?",
+                "tonight at my place",
+                "tonight at my crib",
+                "tonight at ma crib",
+                "tonight at ma place",
+                "go out?"
             ],
             "responses": [
-                "Aaw, that's so sweet of you. Too bad am a Bot."
+                "Aaw, that's so sweet of you. Too bad am a Bot.",
+                "I would love to! Sadly, I'm a Bot."
             ],
             "context": [
                 ""
@@ -130,10 +158,15 @@
             "tag": "fav",
             "patterns": [
                 "I need a favour",
-                "can you help me"
+                "can you help me",
+                "wanna help me"
             ],
             "responses": [
-                "Well, go ahead and name it i see whether i can be able to help"
+                "Well, go ahead and name it to see whether i can be able to help",
+                "Sure! Go on...",
+                "Sure! Tell me how?",
+                "YEAH! What should i do?",
+                "YEAH! how can i help you with?"
             ],
             "context": [
                 ""
@@ -144,10 +177,11 @@
             "patterns": [
                 "I need you",
                 "All I need is you",
-                "I want you"
+                "I want you",
+                "All i want you"
             ],
             "responses": [
-                "Yes I'm here to assist you"
+                "Yes I'm here to assist you! Please keep your request simple. Im Still in my early stages of development!"
             ],
             "context": [
                 ""
