@@ -1,4 +1,3 @@
-UI = https://codepen.io/Sevillain/pen/ZEJNOBv
+# Chat
 
-new =
-https://codepen.io/masudrana2779/pen/OJbRyRB
+a simple chat applicaiton powered by Machine Learning
