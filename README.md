@@ -1,6 +1,8 @@
 # Chat
 
-a simple chat applicaiton powered by Machine Learning
+a simple chat applicaiton (a web app) powered by Machine Learning
+
+![image](https://user-images.githubusercontent.com/36286877/179359919-a5e4871d-67c1-4e5a-8ecf-e28a996670c2.png)
 
 # Setup
 
