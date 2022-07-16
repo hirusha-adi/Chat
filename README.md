@@ -2,7 +2,7 @@
 
 a simple chat applicaiton powered by Machine Learning
 
-# Guide
+# Setup
 
 1. Install `python3`, `git`, and a text editor (`nano`)
     ```bash
