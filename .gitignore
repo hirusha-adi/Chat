@@ -1,3 +1,5 @@
+key.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -132,3 +134,4 @@ words.pkl
 words.pkl
 words.pkl
 chatbot_model.h5
+
