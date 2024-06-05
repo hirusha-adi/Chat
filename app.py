@@ -1,6 +1,5 @@
 # imports
 # ---
-import asyncio
 import gradio as gr
 from loguru import logger
 from typing import Optional, List
@@ -8,10 +7,13 @@ from pydantic import BaseModel
 from openai import AsyncOpenAI
 from openai import __version__ as openai__version__
 
+import asyncio
 import os
+import pickle
 import platform
 from datetime import datetime
 from dotenv import load_dotenv
+
 
 # load .env file
 # ---
@@ -19,6 +21,8 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 BOT_NAME = os.getenv("BOT_NAME")
 USER_NAME = os.getenv("USER_NAME")
+
+HISTORY_FILE = "chat-history.pkl"
 
 
 # other code
@@ -56,7 +60,6 @@ async def save_chat_history_text(input_: str, response: str) -> None:
     except Exception as e:
         logger.error(f"{e}")
 
-
 # code for chatbot
 # ---
 client = AsyncOpenAI(
@@ -88,7 +91,7 @@ async def make_completion(messages: List[Message], nb_retries: int = 3, delay: i
     counter = 0
     keep_loop = True
     while keep_loop:
-        logger.debug(f"Chat Request Retries : {counter}")
+        logger.debug(f"Chat/Completions Nb Retries : {counter}")
         try:
             chat_completion = await client.chat.completions.create(
                 messages=[message.dict() for message in messages],
@@ -102,23 +105,23 @@ async def make_completion(messages: List[Message], nb_retries: int = 3, delay: i
             await asyncio.sleep(delay)
     return None
 
-async def predict(input_, history):
+async def predict(input_: str, history: List[dict]):
     """
-    Sends a request to the ChatGPT API to retrieve a response based on a list of previous messages.
+    Predict the response of the chatbot and complete a running list of chat history.
 
     Parameters
     ----------
-    messages : List[Message]
-        A list of Message objects representing the conversation history.
-    nb_retries : int, optional
-        The number of retry attempts in case of failure (default is 3).
-    delay : int, optional
-        The delay between retry attempts in seconds (default is 30).
+    input : str
+        The input message from the user.
+    history : List[dict]
+        The chat history containing messages from the user and the assistant.
 
     Returns
     -------
-    Optional[str]
-        The response from the ChatGPT API, or None if the request fails.
+    messages : List[tuple]
+        A list of message pairs (user message, assistant response) for display in the chat UI.
+    history : List[dict]
+        The updated chat history including the latest user input and assistant response.
     """
     history.append({"role": "user", "content": input_})
     logger.debug(f"Query: {input_}")
@@ -127,16 +130,49 @@ async def predict(input_, history):
     await save_chat_history_text(input_, response)
     history.append({"role": "assistant", "content": response})
     messages = [(history[i]["content"], history[i+1]["content"]) for i in range(0, len(history)-1, 2)]
+    save_history(history)
     return messages, history
 
+def save_history(history: List[dict]) -> None:
+    """
+    Save the chat history to a file using pickle.
+
+    Parameters
+    ----------
+    history : List[dict]
+        The chat history to be saved.
+    """
+    with open(HISTORY_FILE, 'wb') as file:
+        pickle.dump(history, file)
+    logger.info("Chat history saved.")
+
+def load_history() -> List[dict]:
+    """
+    Load the chat history from a file using pickle.
+
+    Returns
+    -------
+    List[dict]
+        The chat history if the file exists, otherwise an empty list.
+    """
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, 'rb') as file:
+            history = pickle.load(file)
+        logger.info(f"Chat history loaded: {len(history)} items.")
+        return history
+    return []
+
 startup_message()
+
+initial_history = load_history()
+
 
 with gr.Blocks() as demo:
     logger.info("Initiatlizing Gradio app.")
     chatbot = gr.Chatbot(label=BOT_NAME)
-    state = gr.State([])
+    state = gr.State(initial_history)
     with gr.Row():
-        txt = gr.Textbox(show_label=False, placeholder="Enter yor message here...")
+        txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter")
     txt.submit(predict, [txt, state], [chatbot, state])
 
 demo.launch(server_port=8080)
