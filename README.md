@@ -1,39 +1,41 @@
 # Chat
 
-a simple chat applicaiton (a web app) powered by Machine Learning
+A simple chat applicaiton (a web app) powered by OpenAI API and Gradio.
 
-![image](https://user-images.githubusercontent.com/36286877/179359919-a5e4871d-67c1-4e5a-8ecf-e28a996670c2.png)
+## Features
 
-# Setup
+- **Chat with a bot**: Interact with the chatbot in a simple, intuitive interface.
+- **Save chat history**: Optionally save chat history to a file and reload it on startup.
+- **Customizable**: Configure the bot's name, user name, and whether to load history through environment variables.
 
-1. Install `python3`, `git`, and a text editor (`nano`)
-    ```bash
-    sudo apt update && sudo apt install python3 python3-pip git nano -y
-    ```
+## Setup
 
-2. Clone the repository and cd into it
-    ```bash
-    git clone "https://github.com/hirusha-adi/Chat.git"
-    cd ./Chat
-    ```
+```bash
+# Install `python3`, `git`, and a text editor (`nano`)
+sudo apt update && sudo apt install python3 python3-pip git nano -y
 
-3. Install dependencies
-    ```bash
-    python3 -m pip install -r requirements.txt
-    ```
+# Clone the repository and cd into it
+git clone "https://github.com/hirusha-adi/Chat.git"
+cd ./Chat
 
-4. Edit the `intents.json` (optional)
-    ```bash
-    nano intents.json
-    ```
+# Install dependencies
+python3 -m pip install -r requirements.txt
 
-5. Train the model
-    ```bash
-    python3 train.py
-    ```
+# Move the example env file and move it
+mv .env.example .env
 
-6. Start the Chat web server
-    ```bash
-    python3 app.py
-    ```
+# edit the .env file to set the OpenAI API key and other configurations 
+nano .env
+
+# start the web app
+python ./app.py
+```
+
+## Image Showcase
+
+Web User Inrerface:
+![image](https://github.com/hirusha-adi/Chat/assets/36286877/9ed52230-57f6-4e7a-a09e-37399e3d8edf)
+
+Console Output:
+![image](https://github.com/hirusha-adi/Chat/assets/36286877/e9ac7d15-560e-44a0-ba09-c8d29689b4c0)
 

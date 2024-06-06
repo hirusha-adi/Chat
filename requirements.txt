@@ -1,5 +1,4 @@
-flask
-pickles
-nltk
-tensorflow
-keras
+setuptools==70.0.0
+gradio
+python-dotenv
+async-timeout

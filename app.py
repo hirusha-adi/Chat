@@ -1,101 +1,179 @@
-# libraries
-import random
-import numpy as np
+# imports
+# ---
+import gradio as gr
+from loguru import logger
+from typing import Optional, List
+from pydantic import BaseModel
+from openai import AsyncOpenAI
+from openai import __version__ as openai__version__
+
+import asyncio
+import os
 import pickle
-import json
-from flask import Flask, render_template, request
-import nltk
-from keras.models import load_model
-from nltk.stem import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
+import platform
+from datetime import datetime
+from dotenv import load_dotenv
 
 
-# chat initialization
-model = load_model("chatbot_model.h5")
-intents = json.loads(open("intents.json").read())
-words = pickle.load(open("words.pkl", "rb"))
-classes = pickle.load(open("classes.pkl", "rb"))
+# load .env file
+# ---
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+BOT_NAME = os.getenv("BOT_NAME")
+USER_NAME = os.getenv("USER_NAME")
+LOAD_HISTORY = os.getenv("LOAD_HISTORY", "true").lower() == "true"
 
-app = Flask(__name__)
-
-
-@app.route("/")
-def home():
-    return render_template("index.html")
+HISTORY_FILE = "chat-history.pkl"
 
 
-@app.route("/get", methods=["POST"])
-def chatbot_response():
-    msg = request.form["msg"]
-    if msg.startswith('my name is'):
-        name = msg[11:]
-        ints = predict_class(msg, model)
-        res1 = getResponse(ints, intents)
-        res = res1.format(n=name)
-    elif msg.startswith('im '):
-        name = msg[3:]
-        ints = predict_class(msg, model)
-        res1 = getResponse(ints, intents)
-        res = res1.format(n=name)
-    elif msg.startswith('i am'):
-        name = msg[4:]
-        ints = predict_class(msg, model)
-        res1 = getResponse(ints, intents)
-        res = res1.format(n=name)
-    else:
-        ints = predict_class(msg, model)
-        res = getResponse(ints, intents)
+# other code
+# ---
+def startup_message() -> None:
+    print(r"""
+ ________  ___  ___  ________  _________   
+|\   ____\|\  \|\  \|\   __  \|\___   ___\ 
+\ \  \___|\ \  \\\  \ \  \|\  \|___ \  \_| 
+ \ \  \    \ \   __  \ \   __  \   \ \  \  
+  \ \  \____\ \  \ \  \ \  \ \  \   \ \  \ 
+   \ \_______\ \__\ \__\ \__\ \__\   \ \__\
+    \|_______|\|__|\|__|\|__|\|__|    \|__|""")
+    print(f"""
+-------------------------------------------------
+    Date/Time: {datetime.now()}
+    Platform: {platform.platform()}
+    Node: {platform.uname().node}
+    Machine: {platform.uname().machine}
+    Python Version: {platform.python_version()}
+    Gradio Version: {gr.__version__}
+    OpenAI API Version: {openai__version__}
+-------------------------------------------------
+                     Enjoy!
+""")
 
-    return res
+async def save_chat_history_text(input_: str, response: str) -> None:
+    try:
+        if not os.path.isfile("chat-history.txt"):
+            with open("chat-history.txt", "w", encoding="utf-8") as _file_make:
+                _file_make.write(f"({datetime.now()}) File created.\n")
+        with open("chat-history.txt", "a", encoding="utf-8") as file:
+            file.write(f"({datetime.now()}) {BOT_NAME}: {input_}\n")
+            file.write(f"({datetime.now()}) {USER_NAME}: {response}\n")
+    except Exception as e:
+        logger.error(f"{e}")
+
+# code for chatbot
+# ---
+client = AsyncOpenAI(
+    api_key=API_KEY
+)
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+async def make_completion(messages: List[Message], nb_retries: int = 3, delay: int = 30) -> Optional[str]:
+    """
+    Sends a request to the ChatGPT API to retrieve a response based on a list of previous messages.
+
+    Parameters
+    ----------
+    messages : List[Message]
+        A list of Message objects representing the conversation history.
+    nb_retries : int, optional
+        The number of retry attempts in case of failure (default is 3).
+    delay : int, optional
+        The delay between retry attempts in seconds (default is 30).
+
+    Returns
+    -------
+    Optional[str]
+        The response from the ChatGPT API, or None if the request fails.
+    """
+    counter = 0
+    keep_loop = True
+    while keep_loop:
+        logger.debug(f"Chat/Completions Nb Retries : {counter}")
+        try:
+            chat_completion = await client.chat.completions.create(
+                messages=[message.dict() for message in messages],
+                model="gpt-3.5-turbo",
+            )
+            return chat_completion.choices[0].message.content
+        except Exception as e:
+            logger.error(e)
+            counter = counter + 1
+            keep_loop = counter < nb_retries
+            await asyncio.sleep(delay)
+    return None
+
+async def predict(input_: str, history: List[dict]):
+    """
+    Predict the response of the chatbot and complete a running list of chat history.
+
+    Parameters
+    ----------
+    input : str
+        The input message from the user.
+    history : List[dict]
+        The chat history containing messages from the user and the assistant.
+
+    Returns
+    -------
+    messages : List[tuple]
+        A list of message pairs (user message, assistant response) for display in the chat UI.
+    history : List[dict]
+        The updated chat history including the latest user input and assistant response.
+    """
+    history.append({"role": "user", "content": input_})
+    logger.debug(f"Query: {input_}")
+    response = await make_completion([Message(**msg) for msg in history])
+    logger.debug(f"Response: {response}")
+    await save_chat_history_text(input_, response)
+    history.append({"role": "assistant", "content": response})
+    messages = [(history[i]["content"], history[i+1]["content"]) for i in range(0, len(history)-1, 2)]
+    save_history(history)
+    return messages, history
+
+def save_history(history: List[dict]) -> None:
+    """
+    Save the chat history to a file using pickle.
+
+    Parameters
+    ----------
+    history : List[dict]
+        The chat history to be saved.
+    """
+    with open(HISTORY_FILE, 'wb') as file:
+        pickle.dump(history, file)
+    logger.info("Chat history saved.")
+
+def load_history() -> List[dict]:
+    """
+    Load the chat history from a file using pickle.
+
+    Returns
+    -------
+    List[dict]
+        The chat history if the file exists, otherwise an empty list.
+    """
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, 'rb') as file:
+            history = pickle.load(file)
+        logger.info(f"Chat history loaded: {len(history)} items.")
+        return history
+    return []
+
+startup_message()
+
+initial_history = load_history() if LOAD_HISTORY else []
 
 
-# chat functionalities
-def clean_up_sentence(sentence):
-    sentence_words = nltk.word_tokenize(sentence)
-    sentence_words = [lemmatizer.lemmatize(
-        word.lower()) for word in sentence_words]
-    return sentence_words
+with gr.Blocks() as demo:
+    logger.info("Initiatlizing Gradio app.")
+    chatbot = gr.Chatbot(label=BOT_NAME)
+    state = gr.State(initial_history)
+    with gr.Row():
+        txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter")
+    txt.submit(predict, [txt, state], [chatbot, state])
 
-
-# return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
-def bow(sentence, words, show_details=True):
-    # tokenize the pattern
-    sentence_words = clean_up_sentence(sentence)
-    # bag of words - matrix of N words, vocabulary matrix
-    bag = [0] * len(words)
-    for s in sentence_words:
-        for i, w in enumerate(words):
-            if w == s:
-                # assign 1 if current word is in the vocabulary position
-                bag[i] = 1
-                if show_details:
-                    print("found in bag: %s" % w)
-    return np.array(bag)
-
-
-def predict_class(sentence, model):
-    # filter out predictions below a threshold
-    p = bow(sentence, words, show_details=False)
-    res = model.predict(np.array([p]))[0]
-    ERROR_THRESHOLD = 0.25
-    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
-    # sort by strength of probability
-    results.sort(key=lambda x: x[1], reverse=True)
-    return_list = []
-    for r in results:
-        return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
-    return return_list
-
-
-def getResponse(ints, intents_json):
-    tag = ints[0]["intent"]
-    list_of_intents = intents_json["intents"]
-    for i in list_of_intents:
-        if i["tag"] == tag:
-            result = random.choice(i["responses"])
-            break
-    return result
-
-
-if __name__ == "__main__":
-    app.run()
+demo.launch(server_port=8080)
