@@ -1,5 +1,3 @@
-key.txt
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -130,10 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 chatbot_model.h5
-words.pkl
-words.pkl
-words.pkl
-chatbot_model.h5
 
+# Project Files
+# ---
 chat-history.txt
 chat-history.pkl
