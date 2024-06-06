@@ -33,4 +33,9 @@ python ./app.py
 
 ## Image Showcase
 
+Web User Inrerface:
+![image](https://github.com/hirusha-adi/Chat/assets/36286877/9ed52230-57f6-4e7a-a09e-37399e3d8edf)
+
+Console Output:
+![image](https://github.com/hirusha-adi/Chat/assets/36286877/e9ac7d15-560e-44a0-ba09-c8d29689b4c0)
 
