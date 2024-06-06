@@ -21,6 +21,7 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 BOT_NAME = os.getenv("BOT_NAME")
 USER_NAME = os.getenv("USER_NAME")
+LOAD_HISTORY = os.getenv("LOAD_HISTORY", "true").lower() == "true"
 
 HISTORY_FILE = "chat-history.pkl"
 
@@ -164,7 +165,7 @@ def load_history() -> List[dict]:
 
 startup_message()
 
-initial_history = load_history()
+initial_history = load_history() if LOAD_HISTORY else []
 
 
 with gr.Blocks() as demo:
